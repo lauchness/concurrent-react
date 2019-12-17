@@ -11,6 +11,7 @@ import {
   PokemonForm,
   PokemonDataView,
 } from '../utils'
+import '../styles.css'
 
 // By default, all fetches are mocked so we can control the time easily.
 // You can adjust the fetch time with this:
@@ -39,7 +40,7 @@ function PokemonInfo({pokemonResource}) {
 // window.FETCH_TIME = 450
 
 // shows busy indicator, then suspense fallback
-// window.FETCH_TIME = 5000
+window.FETCH_TIME = 5000
 
 // shows busy indicator for a split second
 // 💯 this is what the extra credit improves
@@ -48,6 +49,7 @@ function PokemonInfo({pokemonResource}) {
 // 🐨 create a SUSPENSE_CONFIG variable right here and configure timeoutMs to
 // whatever feels right to you, then try it out and tweek it until you're happy
 // with the experience.
+const SUSPENSE_CONFIG = {timeoutMs: 3000}
 
 function createPokemonResource(pokemonName) {
   return createResource(() => fetchPokemon(pokemonName))
@@ -56,12 +58,16 @@ function createPokemonResource(pokemonName) {
 function App() {
   const [pokemonName, setPokemonName] = React.useState(null)
   // 🐨 add a useTransition hook here
+  const [startTransition, isPending] = React.useTransition(SUSPENSE_CONFIG)
   const [pokemonResource, setPokemonResource] = React.useState(null)
 
   function handleSubmit(newPokemonName) {
     setPokemonName(newPokemonName)
     // 🐨 wrap this next line in a startTransition call
-    setPokemonResource(createPokemonResource(newPokemonName))
+    startTransition(() => {
+      setPokemonResource(createPokemonResource(newPokemonName))
+    })
+
     // 🦉 what do you think would happen if you put the setPokemonName above
     // into the `startTransition` call? Go ahead and give that a try!
   }
@@ -74,7 +80,7 @@ function App() {
         🐨 add inline styles here to set the opacity to 0.6 if the
         useTransition above is pending
       */}
-      <div className="pokemon-info">
+      <div className={`pokemon-info ${isPending ? 'pokemon-loading' : ''}`}>
         {pokemonResource ? (
           <ErrorBoundary>
             <React.Suspense
